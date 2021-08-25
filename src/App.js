@@ -2,7 +2,7 @@ import React from "react";
 import { Chart } from "react-google-charts";
 
 import "./styles.css";
-
+import { createTable  } from "./helpers";
 var MIN = 0.0,
   MAX = 1.0;
 
@@ -22,35 +22,29 @@ const gerarAnimais = (machos, femeas) => {
   for (let i = 0; i < machos + femeas; i++) {
     animais[i].id = i;
   }
-  return animais;
+
+  return { animais: animais };
 };
 
-const criarMatrizC = (animais, vacas, touros) => {
-  const matrizC = [];
+const criarMatriz = (columnLength, lineLength, animais) => {
+  const matriz = [];
 
-  animais.forEach((element) => {
-    if (element.sexo === "femea") {
-      vacas.push(element);
-      console.log("a");
-    }
-    if (element.sexo === "macho") {
-      console.log("b");
-      touros.push(element);
-    }
-  });
-
-  for (let i = 0; i < touros.length; i++) {
-    matrizC[i] = new Array(vacas.lenght);
+  for (let i = 0; i < lineLength; i++) {
+    matriz[i] = new Array(columnLength);
   }
 
-  for (let index = 0; index < touros.length; index++) {
-    for (let j = 0; j < vacas.length; j++) {
-      matrizC[index][j] = 0;
+  for (let index = 0; index < lineLength; index++) {
+    for (let j = 0; j < columnLength; j++) {
+      matriz[index][j] = 0;
     }
   }
 
-  console.log("vacas ijnit ", vacas);
-  console.log("touros ijnit ", touros);
+  return matriz;
+};
+
+const criarMatrizes = (vacas, touros) => {
+  const matrizC = criarMatriz(vacas.length, touros.length);
+
   matrizC[0][0] = 1;
   matrizC[0][3] = 1;
   matrizC[0][6] = 1;
@@ -65,11 +59,9 @@ const criarMatrizC = (animais, vacas, touros) => {
 
   matrizC[4][7] = 1;
 
-  for (let index = 0; index < touros.length; index++) {
-    touros[index].acasalamentos = contagemAcasalamentosPorTouro(index, matrizC);
-  }
+  const matrizP = criarMatriz(vacas.length, touros.length);
 
-  return matrizC;
+  return { matrizC: matrizC, matrizP: matrizP };
 };
 
 const mediaProleC = (matrizC, vacas, touros) => {
@@ -113,25 +105,7 @@ const calcularVariancia = (media, vetorProle) => {
 
   variancia = sum / vetorProle.length;
 
-  console.log("lenght", vetorProle.length);
-
   return variancia;
-};
-
-const criarMatrizP = (vacas, touros) => {
-  const matrizP = [];
-
-  for (let i = 0; i < touros.length; i++) {
-    matrizP[i] = new Array(vacas.lenght);
-  }
-
-  for (let index = 0; index < touros.length; index++) {
-    for (let j = 0; j < vacas.length; j++) {
-      matrizP[index][j] = 0;
-    }
-  }
-
-  return matrizP;
 };
 
 const contagemAcasalamentosPorTouro = (touroIndice, matriz) => {
@@ -166,8 +140,6 @@ const vacasPossiveisAcasalar = (touroIndice, matrizP, touros, vacas) => {
 
 const melhoresPares = (vacas, touros, media) => {
   const melhoramento = [];
-
-  console.log("touros antes da parada toda", touros);
 
   let vacasDisponiveis = [];
 
@@ -234,24 +206,39 @@ const melhoresPares = (vacas, touros, media) => {
       }
     }
   }
+};
 
-  console.log("vacasdisponievis", vacasDisponiveis);
+const criarMatrizSolucao = (touros, vacas) => {
+  const matrizSolucao = criarMatriz(vacas.length, touros.length);
+
+  console.log('matriz solucao', matrizSolucao);
 };
 
 export default function App() {
-  let vacas = [];
-  let touros = [];
+  let {  animais } = gerarAnimais(5, 10);
 
-  const animais = gerarAnimais(5, 10);
-  const matrizC = criarMatrizC(animais, vacas, touros);
+  let vacas = [], touros = [];
 
-  const { media, variancia: varianciaAntes } = mediaProleC(matrizC, vacas, touros);
+  animais.forEach((element) => {
+    if (element.sexo === "femea") {
+      vacas.push(element);
+    }
+    if (element.sexo === "macho") {
+      touros.push(element);
+    }
+  });
 
-  const matrizP = criarMatrizP(vacas, touros);
+  let { matrizC, matrizP } = criarMatrizes(vacas, touros);
+
+  for (let index = 0; index < touros.length; index++) {
+    touros[index].acasalamentos = contagemAcasalamentosPorTouro(index, matrizC);
+  }
 
   for (let index = 0; index < touros.length; index++) {
     vacasPossiveisAcasalar(index, matrizP, touros, vacas);
   }
+
+  const { media, variancia: varianciaAntes } = mediaProleC(matrizC, vacas, touros);
 
   touros.sort((a, b) => (a.contribuicao > b.contribuicao ? 1 : -1));
 
@@ -267,13 +254,12 @@ export default function App() {
 
   const varianciaDepois = calcularVariancia(media, filhotes);
 
-  console.log("variancia Antes", varianciaAntes);
-  console.log("variancia Depois", varianciaDepois);
 
   return (
     <div className='App'>
       <h1>Algoritmo de casalamento</h1>
       <h1>Grafico </h1>
+      <div>{createTable(matrizC)}</div>
     </div>
   );
 }

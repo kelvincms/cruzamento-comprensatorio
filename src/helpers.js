@@ -1,35 +1,39 @@
-// function createTable(tableData) {
-//   var table = document.createElement("table");
-//   var tableBody = document.createElement("tbody");
+export function createTable(tableData) {
+  var table = document.createElement("table");
+  table.style.alignItems ='center';
+  table.style.direction ='flex';
+  table.style.justifyContent ='center';
 
-//   tableData.forEach(function (rowData) {
-//     var row = document.createElement("tr");
+  table.style.border ='1px solid black';
+  table.style.backgroundColor= 'grey';
+  table.style.borderCollapse = 'collapse';
 
-//     rowData.forEach(function (cellData) {
-//       var cell = document.createElement("td");
-//       cell.appendChild(document.createTextNode(cellData));
-//       row.appendChild(cell);
-//     });
+  var tableBody = document.createElement("tbody");
+  tableBody.style.border ='1px solid black';
 
-//     tableBody.appendChild(row);
-//   });
+  tableData.forEach(function (rowData) {
+    var row = document.createElement("tr");
+    row.style.border ='1px solid black';
 
-//   table.appendChild(tableBody);
-//   document.body.appendChild(table);
-// }
 
-// const criarDadosGraficos = (vetorContribuicaoIndividual) => {
-//   let dados = [];
 
-//   dados = [
-//     vetorContribuicaoIndividual.map(
-//       (item) => `t${item.touro.id}-v${item.vaca.id}`,
-//       item.contribuicaoIndividual
-//     ),
-//   ];
+    rowData.forEach(function (cellData) {
+      var cell = document.createElement("td");
+      cell.style.border ='1px solid black';
+      cell.appendChild(document.createTextNode(cellData));
+      row.appendChild(cell);
+    });
 
-//   return dados;
-// };
+    tableBody.appendChild(row);
+  });
+
+  table.appendChild(tableBody);
+  document.body.appendChild(table);
+}
+
+
+
+
 
 // const Grafico = ({ dadosGraficos }) => {
 //   // const maxValue = () => {
