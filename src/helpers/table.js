@@ -1,25 +1,23 @@
 export function createTable(tableData) {
   var table = document.createElement("table");
-  table.style.alignItems ='center';
-  table.style.direction ='flex';
-  table.style.justifyContent ='center';
+  // table.style.alignItems = "center";
+  // table.style.direction = "flex";
+  // table.style.justifyContent = "center";
 
-  table.style.border ='1px solid black';
-  table.style.backgroundColor= 'grey';
-  table.style.borderCollapse = 'collapse';
+  table.style.border = "1px solid black";
+  table.style.backgroundColor = "white";
+  table.style.borderCollapse = "collapse";
 
   var tableBody = document.createElement("tbody");
-  tableBody.style.border ='1px solid black';
+  tableBody.style.border = "1px solid black";
 
   tableData.forEach(function (rowData) {
     var row = document.createElement("tr");
-    row.style.border ='1px solid black';
-
-
+    row.style.border = "1px solid black";
 
     rowData.forEach(function (cellData) {
       var cell = document.createElement("td");
-      cell.style.border ='1px solid black';
+      cell.style.border = "1px solid black";
       cell.appendChild(document.createTextNode(cellData));
       row.appendChild(cell);
     });
@@ -30,10 +28,6 @@ export function createTable(tableData) {
   table.appendChild(tableBody);
   document.body.appendChild(table);
 }
-
-
-
-
 
 // const Grafico = ({ dadosGraficos }) => {
 //   // const maxValue = () => {

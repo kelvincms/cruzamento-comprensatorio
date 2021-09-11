@@ -1,265 +1,204 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Chart } from "react-google-charts";
+import Button from "@material-ui/core/Button";
 
 import "./styles.css";
-import { createTable  } from "./helpers";
-var MIN = 0.0,
-  MAX = 1.0;
+import BasicTable from "./Table";
+import { PriorityQueue } from "./queue-priority";
 
-const gerarAnimais = (machos, femeas) => {
-  let animais = [];
+import {
+  createTable,
+  gerarAnimais,
+  contagemAcasalamentos,
+  calcularVariancia,
+  calcularMedia,
+  mediaProleC,
+  criarMatriz,
+  vacasPossiveisAcasalar
+} from "./helpers";
 
-  for (let i = 0; i < machos + femeas; i++) {
-    animais[i] = {
-      id: i,
-      contribuicao: Math.random() * (MAX - MIN) + MIN,
-      sexo: i < 5 ? "macho" : "femea",
-    };
-  }
-
-  animais = animais.sort((a, b) => (a.contribuicao > b.contribuicao ? -1 : 1));
-
-  for (let i = 0; i < machos + femeas; i++) {
-    animais[i].id = i;
-  }
-
-  return { animais: animais };
-};
-
-const criarMatriz = (columnLength, lineLength, animais) => {
-  const matriz = [];
-
-  for (let i = 0; i < lineLength; i++) {
-    matriz[i] = new Array(columnLength);
-  }
-
-  for (let index = 0; index < lineLength; index++) {
-    for (let j = 0; j < columnLength; j++) {
-      matriz[index][j] = 0;
-    }
-  }
-
-  return matriz;
-};
-
-const criarMatrizes = (vacas, touros) => {
-  const matrizC = criarMatriz(vacas.length, touros.length);
-
-  matrizC[0][0] = 1;
-  matrizC[0][3] = 1;
-  matrizC[0][6] = 1;
-
-  matrizC[1][1] = 1;
-  matrizC[1][4] = 1;
-  matrizC[1][5] = 1;
-  matrizC[1][9] = 1;
-
-  matrizC[3][2] = 1;
-  matrizC[3][8] = 1;
-
-  matrizC[4][7] = 1;
-
-  const matrizP = criarMatriz(vacas.length, touros.length);
-
-  return { matrizC: matrizC, matrizP: matrizP };
-};
-
-const mediaProleC = (matrizC, vacas, touros) => {
-  let sum = 0;
-  let vetorContribuicaoIndividual = [];
-
-  for (let i = 0; i < matrizC.length; i++) {
-    for (let j = 0; j < matrizC[0].length; j++) {
-      if (matrizC[i][j] === 1) {
-        const contribuicaoIndividual = (touros[i].contribuicao + vacas[j].contribuicao) / 2;
-        sum += (touros[i].contribuicao + vacas[j].contribuicao) / 2;
-
-        vetorContribuicaoIndividual.push({
-          contribuicaoIndividual: contribuicaoIndividual,
-          touro: touros[i],
-          vaca: vacas[j],
-        });
-      }
-    }
-  }
-
-  const media = sum / vacas.length;
-
-  const variancia = calcularVariancia(media, vetorContribuicaoIndividual, vacas, touros);
-
-  return {
-    media: media,
-    variancia: variancia,
-  };
-};
-
-const calcularVariancia = (media, vetorProle) => {
-  let variancia = 0;
-  let sum = 0;
-
-  console.log("vetorRecebido", vetorProle);
-
-  for (let i = 0; i < vetorProle.length; i++) {
-    sum += Math.pow(vetorProle[i].contribuicaoIndividual - media, 2);
-  }
-
-  variancia = sum / vetorProle.length;
-
-  return variancia;
-};
-
-const contagemAcasalamentosPorTouro = (touroIndice, matriz) => {
-  const vacas = matriz[touroIndice];
-
-  let contagem = 0;
-
-  for (let i = 0; i < vacas.length; i++) {
-    if (vacas[i] === 1) {
-      contagem = contagem + 1;
-    }
-  }
-
-  return contagem;
-};
-
-const vacasPossiveisAcasalar = (touroIndice, matrizP, touros, vacas) => {
-  const linhaMatriz = matrizP[touroIndice];
-
-  touros[touroIndice].pares = linhaMatriz.map((item, index) => {
-    if (linhaMatriz[index] == 0) {
-      return vacas[index];
-    } else {
-      return {};
-    }
-  });
-
-  const ordenados = touros[touroIndice].pares.sort((a, b) => (a.id > b.id ? 1 : -1));
-
-  touros[touroIndice].pares = ordenados;
-};
-
-const melhoresPares = (vacas, touros, media) => {
-  const melhoramento = [];
-
-  let vacasDisponiveis = [];
-
-  for (let index = 0; index < vacas.length; index++) {
-    vacasDisponiveis.push({
-      acasalou: false,
-      id: vacas[index].id,
-      contribuicao: vacas[index].contribuicao,
-    });
-  }
+const calcularDistancia = (matrizC, matrizP, touros, vacas, media) => {
+  let matrizDistancia = criarMatriz(vacas.length, touros.length);
+  var priorityQueue = new PriorityQueue();
 
   for (let i = 0; i < touros.length; i++) {
-    melhoramento[i] = new Array(vacas.length);
-  }
-
-  for (let touroIndex = 0; touroIndex < touros.length; touroIndex++) {
-    touros[touroIndex].filhotes = [];
-
-    for (let i = 0; i < touros[touroIndex].pares.length; i++) {
-      if (touros[touroIndex].pares[i].id === vacasDisponiveis[i].id) {
-        if (vacasDisponiveis[i].acasalou === false) {
-          if (touros[touroIndex].acasalamentos > 0) {
-            touros[touroIndex].acasalamentos -= 1;
-            const contribuicao =
-              (touros?.[touroIndex]?.contribuicao + vacasDisponiveis?.[i]?.contribuicao) / 2;
-            touros[touroIndex].filhotes.push({
-              vacaId: vacasDisponiveis?.[i]?.id,
-              contribuicao: contribuicao,
-              distancia: Math.abs(contribuicao - media),
-            });
-
-            vacasDisponiveis[i].acasalou = true;
-            touros[touroIndex].filhotes.sort((a, b) => (a.distancia > b.distancia ? 1 : -1));
-          } else {
-            const ultimoFilhoteIndex = touros[touroIndex].filhotes.length;
-            const distanciaUltimoFilhote =
-              touros?.[touroIndex]?.filhotes?.[ultimoFilhoteIndex]?.distancia;
-
-            const contribuicaoAtual =
-              (touros?.[touroIndex]?.contribuicao + vacasDisponiveis?.[i]?.contribuicao) / 2;
-
-            const distanciaAtual = Math.abs(contribuicaoAtual - media);
-
-            if (distanciaAtual < distanciaUltimoFilhote) {
-              touros[touroIndex].filhotes[ultimoFilhoteIndex] = {
-                contribuicao: contribuicaoAtual,
-                distancia: distanciaAtual,
-              };
-            }
-
-            vacasDisponiveis = vacasDisponiveis.map((item, index) => {
-              if (item?.id === touros?.[touroIndex].filhotes?.[ultimoFilhoteIndex]?.vacaId) {
-                return {
-                  ...item,
-                  acasalou: false,
-                };
-              }
-              return item;
-            });
-
-            touros[touroIndex].filhotes.sort((a, b) => (a.distancia > b.distancia ? 1 : -1));
-          }
-        }
+    for (let j = 0; j < vacas.length; j++) {
+      if (matrizP[i][j] === 0) {
+        const contrib = (touros[i].contribuicao + vacas[j].contribuicao) / 2;
+        matrizDistancia[i][j] = Math.pow(contrib - media, 2); //distancia
+        priorityQueue.enqueue(`V:${vacas[j].id}:T:${touros[i].id}`, matrizDistancia[i][j]);
+      } else {
+        matrizDistancia[i][j] = -1;
       }
     }
   }
-};
 
-const criarMatrizSolucao = (touros, vacas) => {
-  const matrizSolucao = criarMatriz(vacas.length, touros.length);
+  console.log(priorityQueue);
 
-  console.log('matriz solucao', matrizSolucao);
+  console.log(matrizDistancia);
+  return matrizDistancia;
 };
 
 export default function App() {
-  let {  animais } = gerarAnimais(5, 10);
+  const [queuePriority, setQueuePriority] = useState();
+  const [mediaMatrizC, setMediaMatrizC] = useState();
+  const [vacas, setVacas] = useState([]);
+  const [touros, setTouros] = useState([]);
 
-  let vacas = [], touros = [];
+  const [matrizC, setMatrizC] = useState(
+    Array.from({ length: 5 }, (v) => Array.from({ length: 10 }, (v) => 0))
+  );
 
-  animais.forEach((element) => {
-    if (element.sexo === "femea") {
-      vacas.push(element);
-    }
-    if (element.sexo === "macho") {
-      touros.push(element);
-    }
-  });
+  const [matrizP, setMatrizP] = useState(
+    Array.from({ length: 5 }, (v) => Array.from({ length: 10 }, (v) => 0))
+  );
 
-  let { matrizC, matrizP } = criarMatrizes(vacas, touros);
+  const [matrizDistancia, setMatrizDistancia] = useState(
+    Array.from({ length: 5 }, (v) => Array.from({ length: 10 }, (v) => 0))
+  );
 
-  for (let index = 0; index < touros.length; index++) {
-    touros[index].acasalamentos = contagemAcasalamentosPorTouro(index, matrizC);
-  }
+  const [showMatriz, setShowMatriz] = useState(true);
+  const [showMatrizDistancia, setShowMatrizDistancia] = useState(true);
+  const [showTouros, setShowTouros] = useState(false);
 
-  for (let index = 0; index < touros.length; index++) {
-    vacasPossiveisAcasalar(index, matrizP, touros, vacas);
-  }
+  useEffect(() => {
+    const fetchData = () => {
+      const { arrayVacas, arrayTouros } = gerarAnimais(5, 10);
 
-  const { media, variancia: varianciaAntes } = mediaProleC(matrizC, vacas, touros);
+      setMatrizC([
+        [1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+        [0, 1, 0, 0, 1, 1, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+      ]);
 
-  touros.sort((a, b) => (a.contribuicao > b.contribuicao ? 1 : -1));
+      setMatrizP([
+        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 1]
+      ]);
 
-  melhoresPares(vacas, touros, media);
+      setMatrizDistancia([
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      ]);
 
-  const filhotes = [];
+      setVacas(arrayVacas);
 
-  touros.forEach((touro) => {
-    touro.filhotes.forEach((filhote) =>
-      filhotes.push({ contribuicaoIndividual: filhote.contribuicao })
-    );
-  });
+      setTouros(contagemAcasalamentos(matrizC, arrayTouros));
 
-  const varianciaDepois = calcularVariancia(media, filhotes);
+      const { mediaC, varianciaC } = mediaProleC(matrizC, vacas, touros);
 
+      setMediaMatrizC(mediaC);
+
+      setMatrizDistancia(calcularDistancia(matrizC, matrizP, touros, vacas, mediaC));
+    };
+    fetchData();
+  }, []);
 
   return (
-    <div className='App'>
-      <h1>Algoritmo de casalamento</h1>
-      <h1>Grafico </h1>
-      <div>{createTable(matrizC)}</div>
+    <div>
+      <div></div>
+
+      <div style={{ display: "flex" }}>
+        <div style={{ flex: "50%" }}>
+          <div>
+            <h3>Listagem de touros</h3>
+          </div>
+
+          <Button
+            style={{ marginBottom: "10px" }}
+            onClick={() => setShowTouros(!showTouros)}
+            variant='contained'
+          >
+            Mostrar Listagem
+          </Button>
+
+          {showTouros &&
+            touros.map((item, index) => (
+              <div key={index} style={{ marginBottom: "10px" }}>
+                <div>
+                  <div>Id:{item.id}</div>
+                  <div>IdGeral:{item.idGeral}</div>
+                  <div>Contribuição:{item.contribuicao}</div>
+                  <div>Sexo:{item.sexo}</div>
+                  <div>Acasalamento:{item.acasalamentos && item.acasalamentos}</div>
+                </div>
+              </div>
+            ))}
+        </div>
+
+        <div style={{ flex: "50%" }}>
+          <div>
+            <h3>Listagem de Vacas</h3>
+          </div>
+
+          {showTouros &&
+            vacas.map((item, index) => (
+              <div key={index} style={{ marginBottom: "10px" }}>
+                <div>
+                  <div>Id:{item.id}</div>
+                  <div>IdGeral:{item.idGeral}</div>
+                  <div>Contribuição:{item.contribuicao}</div>
+                  <div>Sexo:{item.sexo}</div>
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      {/*
+      <h3>Matrizes</h3>
+
+      <Button
+        style={{ marginBottom: "10px" }}
+        onClick={() => setShowMatriz(!showMatriz)}
+        variant='contained'
+      >
+        Mostrar Matrizes Iniciais
+      </Button>
+
+       {showMatriz ? (
+        <div></div>
+      ) : (
+        <div>
+          <h3>Matriz C </h3>
+          <div>
+            <BasicTable rows={matrizC} />
+          </div>
+          <div>
+            <h4>Média:{Number(mediaMatrizC)}</h4>
+          </div>
+          <h3>Matriz P </h3>
+          <div>
+            <BasicTable rows={matrizP} />
+          </div>
+        </div>
+      )}
+
+      <div>
+        <Button
+          style={{ marginBottom: "10px" }}
+          onClick={() => setShowMatrizDistancia(!showMatrizDistancia)}
+          variant='contained'
+        >
+          Mostrar Matriz Distancia
+        </Button>
+
+        {showMatrizDistancia && (
+          <div>
+            <h3>Matriz Distancia </h3>
+
+            <BasicTable rows={matrizDistancia} />
+          </div>
+        )}
+      </div> */}
     </div>
   );
 }
