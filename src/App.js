@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Chart } from "react-google-charts";
 import Button from "@material-ui/core/Button";
 
-import "./styles.css";
 import BasicTable from "./Table";
 import { PriorityQueue } from "./queue-priority";
 
@@ -18,25 +17,64 @@ import {
 } from "./helpers";
 
 const calcularDistancia = (matrizC, matrizP, touros, vacas, media) => {
-  let matrizDistancia = criarMatriz(vacas.length, touros.length);
+  let matrizDistanciaCalculada = criarMatriz(vacas.length, touros.length);
   var priorityQueue = new PriorityQueue();
 
   for (let i = 0; i < touros.length; i++) {
     for (let j = 0; j < vacas.length; j++) {
       if (matrizP[i][j] === 0) {
         const contrib = (touros[i].contribuicao + vacas[j].contribuicao) / 2;
-        matrizDistancia[i][j] = Math.pow(contrib - media, 2); //distancia
-        priorityQueue.enqueue(`V:${vacas[j].id}:T:${touros[i].id}`, matrizDistancia[i][j]);
+
+        matrizDistanciaCalculada[i][j] = Math.pow(contrib - media, 2); //distancia
+
+        priorityQueue.enqueue(
+          { vaca: vacas[j].id, touro: vacas[i].id },
+          matrizDistanciaCalculada[i][j]
+        );
       } else {
-        matrizDistancia[i][j] = -1;
+        matrizDistanciaCalculada[i][j] = -1;
       }
     }
   }
 
+  console.log("print matrizDistanciaCalculada");
+  console.log(matrizDistanciaCalculada);
+  console.log("print priority queue");
   console.log(priorityQueue);
 
-  console.log(matrizDistancia);
-  return matrizDistancia;
+  return { matrizDistanciaCalculada, priorityQueue };
+};
+
+//1º Acessar a primeira posição da fila de prioridade
+//2º Verificar
+//3º
+//4º
+//5º
+const execucao = (matriz, touros, vacas, priorityQueue) => {
+  console.log("print matriz");
+  console.log(matriz);
+  console.log("print priority queue");
+  console.log(priorityQueue);
+
+  const pares = [];
+
+  for (let index = 0; index < priorityQueue.length(); index++) {
+    const {
+      element: { vaca, touro }
+    } = priorityQueue.dequeue();
+
+    console.log(`first: ${vaca} ${touro}`);
+
+    // for (let j = 0; j < matriz[vaca].length; j++) {
+    //   console.log(matriz[j][touro]);
+    // }
+
+    // for (let j = 0; j < matriz.length; j++) {
+    //   console.log(matriz[first.touro][j]);
+    // }
+  }
+
+  return pares;
 };
 
 export default function App() {
@@ -62,49 +100,56 @@ export default function App() {
   const [showTouros, setShowTouros] = useState(false);
 
   useEffect(() => {
-    const fetchData = () => {
-      const { arrayVacas, arrayTouros } = gerarAnimais(5, 10);
+    const { arrayVacas, arrayTouros } = gerarAnimais(5, 10);
 
-      setMatrizC([
-        [1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
-        [0, 1, 0, 0, 1, 1, 0, 0, 0, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
-      ]);
+    setMatrizC([
+      [1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+      [0, 1, 0, 0, 1, 1, 0, 0, 0, 1],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+      [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+    ]);
 
-      setMatrizP([
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 1]
-      ]);
+    setMatrizP([
+      [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+      [0, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 1, 0, 1]
+    ]);
 
-      setMatrizDistancia([
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-      ]);
+    setMatrizDistancia([
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    ]);
 
-      setVacas(arrayVacas);
+    setVacas(arrayVacas);
 
-      setTouros(contagemAcasalamentos(matrizC, arrayTouros));
+    setTouros(contagemAcasalamentos(matrizC, arrayTouros));
 
-      const { mediaC, varianciaC } = mediaProleC(matrizC, vacas, touros);
+    const { mediaC, varianciaC } = mediaProleC(matrizC, vacas, touros);
 
-      setMediaMatrizC(mediaC);
+    setMediaMatrizC(mediaC);
 
-      setMatrizDistancia(calcularDistancia(matrizC, matrizP, touros, vacas, mediaC));
-    };
-    fetchData();
+    const { matrizDistanciaCalculada, priorityQueue } = calcularDistancia(
+      matrizC,
+      matrizP,
+      touros,
+      vacas,
+      mediaC
+    );
+
+    setMatrizDistancia(matrizDistanciaCalculada);
+
+    const paresSolucao = execucao(matrizDistanciaCalculada, touros, vacas, priorityQueue);
   }, []);
 
   return (
     <div>
-      <div></div>
+      {/* <div></div>
 
       <div style={{ display: "flex" }}>
         <div style={{ flex: "50%" }}>
@@ -151,7 +196,7 @@ export default function App() {
               </div>
             ))}
         </div>
-      </div>
+      </div> */}
 
       {/*
       <h3>Matrizes</h3>
