@@ -49,6 +49,9 @@ export class PriorityQueue {
     return this.items.shift();
   }
 
+  // removeElement(key){
+  //   this.items.
+  // }
   front() {
     // returns the highest priority element
     // in the Priority queue without removing it.
@@ -71,6 +74,10 @@ export class PriorityQueue {
 
   length() {
     return this.items.length;
+  }
+
+  getItems() {
+    return this.items;
   }
   // printQueue function
   // prints all the element of the queue

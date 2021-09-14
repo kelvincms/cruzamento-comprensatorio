@@ -8,19 +8,27 @@ export const gerarAnimais = (machos, femeas) => {
   for (let i = 0; i < machos; i++) {
     arrayTouros.push({
       id: i,
-      idGeral: i,
+      idAlterado: i,
+      // idGeral: i,
       contribuicao: Math.random() * (MAX - MIN) + MIN,
       sexo: "macho",
-      acasalamentos: 0
+      acasalamentosRestantes: 0,
+      acasalou: false,
+      paresFechados: [],
+      paresPossiveis: []
     });
   }
 
   for (let i = 0; i < femeas; i++) {
     arrayVacas.push({
       id: i,
-      idGeral: i + machos,
+      idAlterado: i,
+      // idGeral: i + machos,
       contribuicao: Math.random() * (MAX - MIN) + MIN,
-      sexo: "femea"
+      sexo: "femea",
+      acasalou: false,
+      paresFechados: {},
+      paresPossiveis: []
     });
   }
 
@@ -41,6 +49,7 @@ export const contagemAcasalamentos = (matriz, touros) => {
     }
 
     touros[i].acasalamentos = contagem;
+    touros[i].acasalamentosRestantes = contagem;
   }
 
   return touros;
