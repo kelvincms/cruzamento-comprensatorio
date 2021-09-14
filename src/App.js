@@ -36,19 +36,20 @@ const calcularDistancia = (matrizC, matrizP, touros, vacas, media) => {
       /// percorre a matriz de cosanguinidade, caso o valor do [touro][vaca] seja 0, então eles podem acasalar. Caso contrário é colocado -1 na posição
       if (matrizP[i][j] === 0) {
         const contrib = (touros[i].contribuicao + vacas[j].contribuicao) / 2;
+        const distancia = Math.pow(contrib - media, 2);
 
-        matrizDistanciaCalculada[i][j] = Math.pow(contrib - media, 2); //distancia
+        matrizDistanciaCalculada[i][j] = distancia; //distancia
 
         vacas[j].paresPossiveis.push({
           vaca: vacas[j],
           touro: touros[i],
-          distancia: matrizDistanciaCalculada[i][j]
+          distancia: distancia
         });
 
         touros[i].paresPossiveis.push({
           vaca: vacas[j],
           touro: touros[i],
-          distancia: matrizDistanciaCalculada[i][j]
+          distancia: distancia
         });
       } else {
         matrizDistanciaCalculada[i][j] = -1;
@@ -85,20 +86,21 @@ const calcularDistancia = (matrizC, matrizP, touros, vacas, media) => {
       touros[i].acasalou = true;
       touros[i].paresFechados = touros[i].paresPossiveis;
 
-      touros[i].paresFechados.map((par) => {
+      touros[i].paresFechados.map((item) => {
         touros[i].acasalamentosRestantes--;
+        touros[i].paresPossiveis = [];
 
-        vacas[par.vaca.id].acasalou = true;
-        vacas[par.vaca.id].paresFechados = {
-          vaca: par.vaca,
+        vacas[item.vaca.id].acasalou = true;
+        vacas[item.vaca.id].paresFechados = {
+          vaca: item.vaca,
           touro: touros[i]
         };
       });
     }
   }
 
+  // reajustou os index e apaga as linhas
   let alterarLinhas = false;
-
   for (let index = 0, contador = 0; index < touros.length; index++) {
     if (alterarLinhas) {
       touros[index].idAlterado = touros[index].id - contador;
@@ -115,8 +117,8 @@ const calcularDistancia = (matrizC, matrizP, touros, vacas, media) => {
     }
   }
 
+  // reajustou os index e apaga as colunas
   let alterarColunas = false;
-
   for (let index = 0, contador = 0; index < vacas.length; index++) {
     if (alterarColunas) {
       vacas[index].idAlterado = vacas[index].id - contador;
@@ -133,42 +135,99 @@ const calcularDistancia = (matrizC, matrizP, touros, vacas, media) => {
     }
   }
 
-  return { matrizDistanciaCalculada, touros, vacas };
+  return matrizDistanciaCalculada;
 };
 
-//1º Acessar a primeira posição da fila de prioridade, nesse caso temos uma distancia grande
-//2º Por isso precisamos verificar se
-//2º Verificar se t2 tem acasalamentos
-//3º checar se t2 passou do numero de acasalmentos, se o
 const execucao = (matriz, touros, vacas) => {
-  const pares = [];
+  const paresFinais = [];
   var priorityQueue = new PriorityQueue();
 
   for (let index = 0; index < touros.length; index++) {
     if (touros[index].acasalou) {
+      // preenche os pares finais que já acasalaram
       touros[index].paresFechados.map((item) => {
-        pares.push(item);
+        paresFinais.push(item);
       });
     } else {
       touros[index].paresPossiveis.map((item) => {
-        priorityQueue.enqueue(item, item.distancia);
+        if (item.vaca.acasalou === false) {
+          priorityQueue.enqueue(item, item.distancia);
+        }
       });
     }
-    // const {
-    // element: { vaca, touro }
-    // } = priorityQueue.dequeue();
-    // Lê toda coluna da vaca escolhida
-    // for (let j = 0; j < matriz.length; j++) {
-    //   console.log(matriz[j][vaca]);
-    // }
-    // Lê toda linha do touro escolhido
-    // for (let j = 0; j < matriz[0].length; j++) {
-    // }
   }
 
-  console.log("fechou ja ai irmao?: pares fechados", pares);
-  console.log("vamo trabalhar", priorityQueue.getItems());
-  return pares;
+  for (let index = 0; index < priorityQueue.size(); index++) {
+    const {
+      element: { vaca, touro }
+    } = priorityQueue.dequeue();
+
+    //FECHOU A LINHA
+    // if (touro.acasalamentosRestantes === 0) {
+    // touros[touro.id].acasalou = true;
+    // }
+
+    //Verificar se os pares são obrigatórios
+    if (vaca.acasalou || touro.acasalou) {
+      //
+      console.log("Ignorei");
+    } else {
+      console.log(`Vaca, lenght: ${vaca.paresPossiveis.length}`);
+      console.log(`Touro, lenght: ${touro.paresPossiveis.length}`);
+
+      if (
+        touros[touro.id].paresPossiveis.length !== touros[touro.id].acasalamentos &&
+        vaca.paresPossiveis.length > 1
+      ) {
+        removeVacaFromArrayTouros(touros, vaca, touro);
+        removeTouroFromArrayVacas(vacas, vaca, touro);
+
+        // touros[touro.id].acasalamentosRestantes--;
+        matriz[touro.idAlterado][vaca.idAlterado] = -1;
+      }
+
+      if (touro.paresPossiveis.length === touro.acasalamentos && touro.acasalou === false) {
+        touros[touro.id].paresPossiveis.forEach((item) => {
+          touros[touro.id].paresFechados.push({ vaca: item.vaca, touro: touro });
+          touros[touro.id].acasalou = true;
+          vacas[item.vaca.id].acasalou = true;
+        });
+      }
+
+      if (vaca.paresPossiveis.length === 1 && vaca.acasalou === false) {
+        vacas[vaca.id].paresPossiveis.forEach((item) => {
+          vacas[vaca.id].paresFechados = { vaca: vaca, touro: item.touro };
+          vacas[vaca.id].acasalou = true;
+          touros[item.touro.id].acasalou = true;
+        });
+      }
+    }
+  }
+
+  console.log("matriz");
+  printMatriz(matriz);
+  console.log("fechou ja ai irmao?: pares fechados", paresFinais);
+  return paresFinais;
+};
+
+const removeVacaFromArrayTouros = (arrayTouros, vaca, touro) => {
+  const paresPossiveis = arrayTouros[touro.id].paresPossiveis
+    .filter((item) => item?.vaca?.id !== vaca.id)
+    .map((item) => item);
+
+  arrayTouros[touro.id].paresPossiveis = paresPossiveis;
+
+  return arrayTouros;
+};
+
+const removeTouroFromArrayVacas = (arrayVacas, vaca, touro) => {
+  const paresPossiveis = arrayVacas[vaca.id].paresPossiveis
+    .filter((item) => item?.touro?.id !== touro.id)
+    .map((item) => item);
+
+  arrayVacas[vaca.id].paresPossiveis = paresPossiveis;
+
+  return arrayVacas;
 };
 
 export default function App() {
@@ -192,12 +251,20 @@ export default function App() {
   ];
 
   matrizP = [
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    [1, 0, 1, 1, 0, 0, 1, 1, 1, 0],
-    [0, 0, 1, 1, 1, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 1, 0, 1]
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   ];
+
+  // matrizP = [
+  //   [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 0, 0, 0, 0, 0, 0, 1, 0, 1]
+  // ];
 
   vacas = arrayVacas;
   touros = contagemAcasalamentos(matrizC, arrayTouros);
@@ -206,14 +273,11 @@ export default function App() {
 
   mediaMatrizC = mediaC;
 
-  const { matrizDistanciaCalculada } = calcularDistancia(matrizC, matrizP, touros, vacas, mediaC);
+  matrizDistancia = calcularDistancia(matrizC, matrizP, touros, vacas, mediaC);
 
-  matrizDistancia = matrizDistanciaCalculada;
-
-  console.log("Touros Depois", touros);
-  console.log("Vacas Depois", vacas);
-
-  const paresSolucao = execucao(matrizDistanciaCalculada, touros, vacas);
+  console.log("vacas", vacas);
+  console.log("touros", touros);
+  const paresSolucao = execucao(matrizDistancia, touros, vacas);
 
   return <div></div>;
 }

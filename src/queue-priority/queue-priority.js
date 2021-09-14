@@ -17,7 +17,9 @@ export class PriorityQueue {
   // functions to be implemented
   enqueue(element, priority) {
     // creating object from queue element
+    // var qElement = new QElement({ [`${element.vaca.id}:${element.touro.id}`]: element }, priority);
     var qElement = new QElement(element, priority);
+
     var contain = false;
 
     // iterating through the entire
@@ -72,7 +74,7 @@ export class PriorityQueue {
     return this.items.length == 0;
   }
 
-  length() {
+  size() {
     return this.items.length;
   }
 
