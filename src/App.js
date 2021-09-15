@@ -1,24 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Chart } from "react-google-charts";
-import Button from "@material-ui/core/Button";
+//import { Chart } from "react-google-charts";
+//import Button from "@material-ui/core/Button";
 
-import BasicTable from "./Table";
+//import BasicTable from "./Table";
 import { PriorityQueue } from "./queue-priority";
 
-import {
-  gerarAnimais,
-  contagemAcasalamentos,
-  calcularVariancia,
-  calcularMedia,
-  mediaProleC,
-  vacasPossiveisAcasalar,
-  criarMatriz,
-  createTable,
-  deleteRow,
-  deleteColumn,
-  printMatriz,
-  printArray
-} from "./helpers";
+import { gerarAnimais, contagemAcasalamentos, calcularVariancia, calcularMedia, mediaProleC, vacasPossiveisAcasalar, criarMatriz, createTable, deleteRow, deleteColumn, printMatriz, printArray } from "./helpers";
 
 const calcularDistancia = (matriz, matrizP, touros, vacas, media) => {
   let matrizDistanciaCalculada = criarMatriz(vacas.length, touros.length);
@@ -44,13 +31,13 @@ const calcularDistancia = (matriz, matrizP, touros, vacas, media) => {
         vacas[j].paresPossiveis.push({
           vaca: vacas[j],
           touro: touros[i],
-          distancia: distancia
+          distancia: distancia,
         });
 
         touros[i].paresPossiveis.push({
           vaca: vacas[j],
           touro: touros[i],
-          distancia: distancia
+          distancia: distancia,
         });
       } else {
         matrizDistanciaCalculada[i][j] = -1;
@@ -66,14 +53,14 @@ const calcularDistancia = (matriz, matrizP, touros, vacas, media) => {
 
           vacas[j].paresFechados = {
             vaca: vacas[j],
-            touro: touro
+            touro: touro,
           };
 
           vacas[j].acasalou = true;
 
           touros[touro.id].paresFechados.push({
             vaca: vacas[j],
-            touro: touro
+            touro: touro,
           });
 
           touros[touro.id].acasalamentosRestantes--;
@@ -98,7 +85,7 @@ const calcularDistancia = (matriz, matrizP, touros, vacas, media) => {
 
         vacas[item.vaca.id].paresFechados = {
           vaca: item.vaca,
-          touro: touros[i]
+          touro: touros[i],
         };
       });
 
@@ -226,55 +213,94 @@ const execucao = (matriz, touros, vacas, mapVacas, mapTouros) => {
       vacas[index].acasalamentosRestantes = matriz.length - vacas[index].paresImpossiveis;
     }
   }
-
-  for (let index = 0; index < priorityQueue.size(); index++) {
+  const tamPriorityQueue = priorityQueue.size();
+  for (let index = 0; index < tamPriorityQueue; index++) {
     //1. Retira o elemento da fila de prioridade, a ordem da retirada é pelo maior valor.
     const {
-      element: { vaca, touro }
+      element: { vaca, touro },
     } = priorityQueue.dequeue();
-
-    //2. Se nem a vaca e nem o touro acasalou então os dois podem acasalar
-    if (vaca.acasalou && touro.acasalou) {
-    } else {
-      // console.log(`Vaca, lenght: ${vaca.paresPossiveis.length}  id:${vaca.id}`);
-      // console.log(`Touro, lenght: ${touro.paresPossiveis.length} id:${touro.id}`);
-
-      // 2.1 Valor na posição informada -1
-      matriz[touro.idAlterado][vaca.idAlterado] = -1;
-
+    if (vaca.acasalamentosRestantes !== 1 && touro.acasalamentosRestantes !== touro.acasalamentos) {
       vaca.acasalamentosRestantes--;
       touro.acasalamentosRestantes--;
-
-      if (vaca.acasalamentosRestantes === vaca.acasalamentos) {
-        const nrLinhas = matriz.length;
-
-        for (let i = 0; i < nrLinhas; i++) {
-          if (matriz[i][vaca.idAlterado] !== -1) {
-            vacas[vaca.id].acasalou = true;
-            touros[mapTouros.get(i)].acasalamentosRestantes--;
-
-            // if (
-            //   touros[mapTouros.get(i)].acasalamentosRestantes ===
-            //   touros[mapTouros.get(i)].acasalamentos
-            // ) {
-            //   touros[mapTouros.get(i)].acasalou = true;
-            // }
-          }
+      matriz[touro.idAlterado][vaca.idAlterado] = -1;
+    } else {
+      if (vacas.acasalamentosRestantes === 1) {
+        if (vaca.acasalou === false) {
+          touro.paresGarantidos = {
+            vaca: vacas[vaca.id],
+            touro: touros[touro.id],
+            distancia: matriz[touro.idAlterado][vaca.idAlterado],
+          };
+          touros[touro.id].acasalamentosRestantes--;
+        }else{
+          matriz[touro.idAlterado][vaca.idAlterado] = -1;
         }
       }
-
-      if (touros[touro.id].acasalamentosRestantes === touros[touro.id].acasalamentos) {
-        const nrColunas = matriz[0].length;
-
-        for (let j = 0; j < nrColunas; j++) {
-          if (matriz[touro.idAlterado][j] !== -1) {
-            vacas[mapVacas.get(j)].acasalou = true;
-          }
+      if (touros.acasalamentosRestantes === touro.acasalamentos) {
+        if(touro.acasalou === false){
+          touro.paresGarantidos = {
+            vaca: vacas[vaca.id],
+            touro: touros[touro.id],
+            distancia: matriz[touro.idAlterado][vaca.idAlterado],
+          };
+          vacas[vaca.id].acasalamentosRestantes--;
+          touros[touro.id].acasalou = true;
+          vacas[vaca.id].acasalou = true;
+        }else{
+          vacas[vaca.id].acasalamentosRestantes--;
+          matriz[touro.idAlterado][vaca.idAlterado] = -1;
         }
-
-        touros[touro.id].acasalou = true;
       }
     }
+    // //2. Se nem a vaca e nem o touro acasalou então os dois podem acasalar
+    // if (vaca.acasalou && touro.acasalou) {
+    // } else {
+    //   // console.log(`Vaca, lenght: ${vaca.paresPossiveis.length}  id:${vaca.id}`);
+    //   // console.log(`Touro, lenght: ${touro.paresPossiveis.length} id:${touro.id}`);
+
+    //   // 2.1 Valor na posição informada -1
+    //   matriz[touro.idAlterado][vaca.idAlterado] = -1;
+    //   vaca.acasalamentosRestantes--;
+    //   touro.acasalamentosRestantes--;
+
+    //   if (vaca.acasalamentosRestantes === vaca.acasalamentos) {
+    //     const nrLinhas = matriz.length;
+    //     for (let i = 0; i < nrLinhas; i++) {
+    //       if (matriz[i][vaca.idAlterado] !== -1) {
+    //         indexTouro = mapTouros.get(i);
+    //         vacas[vaca.id].acasalou = true;
+    //         touros[indexTouro].acasalamentosRestantes--;
+    //         touros[indexTouro].paresGarantidos = {
+    //           vaca: vacas[vaca.id],
+    //           touro: touros[indexTouro],
+    //           distancia: matriz[i][vaca.idAlterado],
+    //         };
+    //         if (touros[indexTouro].paresGarantidos.length === touros[indexTouro].acasalamentos) {
+    //           touros[indexTouro].acasalou = true;
+    //         }
+
+    // if (
+    //   touros[mapTouros.get(i)].acasalamentosRestantes ===
+    //   touros[mapTouros.get(i)].acasalamentos
+    // ) {
+    //   touros[mapTouros.get(i)].acasalou = true;
+    // }
+    //       }
+    //     }
+    //   }
+
+    //   if (touros[touro.id].acasalamentosRestantes === touros[touro.id].acasalamentos) {
+    //     const nrColunas = matriz[0].length;
+
+    //     for (let j = 0; j < nrColunas; j++) {
+    //       if (matriz[touro.idAlterado][j] !== -1) {
+    //         vacas[mapVacas.get(j)].acasalou = true;
+    //       }
+    //     }
+
+    //     touros[touro.id].acasalou = true;
+    //   }
+    // }
   }
 
   console.log("vacas", vacas);
@@ -284,10 +310,54 @@ const execucao = (matriz, touros, vacas, mapVacas, mapTouros) => {
   printMatriz(matriz);
 };
 
+// const testeRecursaoVaca = (vaca, matriz,mapTouros,mapVacas) =>{
+// if(vaca.acasalamentosRestantes === 1){
+//   const nrLinhas = matriz.length;
+//   for (let i = 0; i < nrLinhas; i++) {
+//     if (matriz[i][vaca.idAlterado] !== -1) {
+//       indexTouro = mapTouros.get(i);
+//       vacas[vaca.id].acasalou = true;
+//       touros[indexTouro].acasalamentosRestantes--;
+//       touros[indexTouro].paresGarantidos = {
+//         vaca: vacas[vaca.id],
+//         touro: touros[indexTouro],
+//         distancia: matriz[i][vaca.idAlterado],
+//       }
+// testeRecursaoTouro(touros[indexTouro],matriz, mapTouros, mapVacas);
+// }
+// }
+// }else{
+//   return;
+// }
+// };
+
+// const testeRecursaoTouro = (touro, matriz,mapTouros,mapVacas) => {
+
+//   // const nrColunas = matriz[0].length;
+
+//   // for (let j = 0; j < nrColunas; j++) {
+//     //   if (matriz[touro.idAlterado][j] !== -1) {
+//   //     vacas[mapVacas.get(j)].acasalou = true;
+//   //   }
+//   // }
+
+//   if (touro.paresGarantidos.length === touro.acasalamentos) {
+//     touro.acasalou = true;
+//     for (let index = 0; index < matriz[0].length; index++) {
+//       vacaAtual = mapVacas.get(index);
+//       vacaAtual.acasalamentosRestantes = 1;
+//       vacaAtual.acasalou = true;
+//       testeRecursaoVaca(vacaAtual);
+
+//     }
+//   }
+
+//   // touros[touro.id].acasalou = true;
+
+// };
+
 const removeVacaFromArrayTouros = (arrayTouros, vaca, touro) => {
-  const paresPossiveis = arrayTouros[touro.id].paresPossiveis
-    .filter((item) => item?.vaca?.id !== vaca.id)
-    .map((item) => item);
+  const paresPossiveis = arrayTouros[touro.id].paresPossiveis.filter((item) => item?.vaca?.id !== vaca.id).map((item) => item);
 
   arrayTouros[touro.id].paresPossiveis = paresPossiveis;
 
@@ -295,9 +365,7 @@ const removeVacaFromArrayTouros = (arrayTouros, vaca, touro) => {
 };
 
 const removeTouroFromArrayVacas = (arrayVacas, vaca, touro) => {
-  const paresPossiveis = arrayVacas[vaca.id].paresPossiveis
-    .filter((item) => item?.touro?.id !== touro.id)
-    .map((item) => item);
+  const paresPossiveis = arrayVacas[vaca.id].paresPossiveis.filter((item) => item?.touro?.id !== touro.id).map((item) => item);
 
   arrayVacas[vaca.id].paresPossiveis = paresPossiveis;
 
@@ -321,7 +389,7 @@ export default function App() {
     [0, 1, 0, 0, 1, 1, 0, 0, 0, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
   ];
 
   // matrizP = [
@@ -336,7 +404,7 @@ export default function App() {
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   ];
 
   vacas = arrayVacas;
@@ -346,13 +414,7 @@ export default function App() {
 
   mediaMatrizC = mediaC;
 
-  const { matrizDistanciaCalculada, mapVacas, mapTouros } = calcularDistancia(
-    matrizC,
-    matrizP,
-    touros,
-    vacas,
-    mediaC
-  );
+  const { matrizDistanciaCalculada, mapVacas, mapTouros } = calcularDistancia(matrizC, matrizP, touros, vacas, mediaC);
 
   matrizDistancia = matrizDistanciaCalculada;
 
