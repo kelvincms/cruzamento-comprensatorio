@@ -83,9 +83,9 @@ export class PriorityQueue {
   }
   // printQueue function
   // prints all the element of the queue
-  printPQueue() {
-    var str = "";
-    for (var i = 0; i < this.items.length; i++) str += this.items[i].element + " ";
-    return str;
-  }
+  // printPQueue() {
+  //   var str = "";
+  //   for (var i = 0; i < this.items.length; i++) str += JSON.stringfy + " ";
+  //   return str;
+  // }
 }
