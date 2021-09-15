@@ -9,6 +9,7 @@ export const gerarAnimais = (machos, femeas) => {
     arrayTouros.push({
       id: i,
       idAlterado: i,
+      paresImpossiveis: 0,
       // idGeral: i,
       contribuicao: Math.random() * (MAX - MIN) + MIN,
       sexo: "macho",
@@ -23,6 +24,7 @@ export const gerarAnimais = (machos, femeas) => {
     arrayVacas.push({
       id: i,
       idAlterado: i,
+      paresImpossiveis: 0,
       // idGeral: i + machos,
       contribuicao: Math.random() * (MAX - MIN) + MIN,
       sexo: "femea",
