@@ -246,29 +246,27 @@ const execucao = (matriz, touros, vacas, mapVacas, mapTouros) => {
       touro.acasalamentosRestantes--;
 
       if (vaca.acasalamentosRestantes === vaca.acasalamentos) {
-        //percorre a matriz
-        for (let index = 0; index < matriz.length; index++) {
-          if (matriz[mapTouros.get(index)][vaca.idAlterado] !== -1) {
-            if (
-              touros[mapTouros.get(index)].acasalamentosRestantes ==
-              touros[mapTouros.get(index)].acasalamentos
-            ) {
-              for (let j = 0; j < matriz[0].length; j++) {
-                if (matriz[mapTouros.get(index)][j] !== -1) {
-                  vacas[mapVacas.get(j)].acasalou = true;
-                }
-              }
-            }
+        const nrLinhas = matriz.length;
 
+        for (let i = 0; i < nrLinhas; i++) {
+          if (matriz[i][vaca.idAlterado] !== -1) {
             vacas[vaca.id].acasalou = true;
-          } else {
-            touros[mapTouros.get(index)].acasalamentosRestantes--;
+            touros[mapTouros.get(i)].acasalamentosRestantes--;
+
+            // if (
+            //   touros[mapTouros.get(i)].acasalamentosRestantes ===
+            //   touros[mapTouros.get(i)].acasalamentos
+            // ) {
+            //   touros[mapTouros.get(i)].acasalou = true;
+            // }
           }
         }
       }
 
       if (touros[touro.id].acasalamentosRestantes === touros[touro.id].acasalamentos) {
-        for (let j = 0; j < matriz[0].length; j++) {
+        const nrColunas = matriz[0].length;
+
+        for (let j = 0; j < nrColunas; j++) {
           if (matriz[touro.idAlterado][j] !== -1) {
             vacas[mapVacas.get(j)].acasalou = true;
           }
