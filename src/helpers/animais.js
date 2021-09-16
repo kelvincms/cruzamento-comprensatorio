@@ -1,5 +1,5 @@
 var MIN = 0.0,
-  MAX = 1.0;
+  MAX = 10.0;
 
 export const gerarAnimais = (machos, femeas) => {
   let arrayVacas = [],
@@ -8,30 +8,21 @@ export const gerarAnimais = (machos, femeas) => {
   for (let i = 0; i < machos; i++) {
     arrayTouros.push({
       id: i,
-      idAlterado: i,
-      paresImpossiveis: 0,
-      // idGeral: i,
       contribuicao: Math.random() * (MAX - MIN) + MIN,
       sexo: "macho",
-      acasalamentosRestantes: 0,
+      paresPossiveis: 0,
       acasalou: false,
-      paresFechados: [],
-      paresPossiveis: [],
-      paresGarantidos: {}
+      paresGarantidos: {},
     });
   }
 
   for (let i = 0; i < femeas; i++) {
     arrayVacas.push({
       id: i,
-      idAlterado: i,
-      paresImpossiveis: 0,
-      // idGeral: i + machos,
+      paresPossiveis: 0,
       contribuicao: Math.random() * (MAX - MIN) + MIN,
       sexo: "femea",
       acasalou: false,
-      paresFechados: {},
-      paresPossiveis: []
     });
   }
 
@@ -44,17 +35,13 @@ export const contagemAcasalamentos = (matriz, touros) => {
   for (let i = 0; i < qtdLinhas; i++) {
     const vacas = matriz[i];
     let contagem = 0;
-
     for (let j = 0; j < vacas.length; j++) {
       if (vacas[j] === 1) {
         contagem = contagem + 1;
       }
     }
-
     touros[i].acasalamentos = contagem;
-    touros[i].acasalamentosRestantes = contagem;
   }
-
   return touros;
 };
 
@@ -72,4 +59,13 @@ const vacasPossiveisAcasalar = (touroIndice, matrizP, touros, vacas) => {
   const ordenados = touros[touroIndice].pares.sort((a, b) => (a.id > b.id ? 1 : -1));
 
   touros[touroIndice].pares = ordenados;
+};
+
+export const checaVacasTouros = (touros,vacas) =>{
+for (let index = 0; index < touros.length; index++) {
+  console.log("Touro: ",touros[index]);
+}
+for (let index = 0; index < vacas.length; index++) {
+  console.log("Vaca: ",vacas[index]);
+}
 };
