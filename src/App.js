@@ -46,52 +46,58 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
     const {
       element: { vaca, touro },
     } = priorityQueue.dequeue();
-    if (vacas[vaca.id].paresPossiveis !== 1 && touros[touro.id].paresPossiveis !== touros[touro.id].acasalamentos) {
-      vacas[vaca.id].paresPossiveis--;
-      touros[touro.id].paresPossiveis--;
-      matriz[touro.id][vaca.id] = -1;
-    } else {
-      if (vacas[vaca.id].paresPossiveis === 1) {
+
+    // && touros[touro.id].paresPossiveis !== 0
+    if (touros[touro.id].paresPossiveis <= touros[touro.id].acasalamentos) {
+      if (touros[touro.id].paresGarantidos.length < touros[touro.id].acasalamentos) {
         if (vacas[vaca.id].acasalou === false) {
-          touros[touro.id].paresGarantidos = {
+          vacas[vaca.id].acasalou = true;
+          touros[touro.id].paresGarantidos.push({
             vaca: vacas[vaca.id],
             distancia: matriz[touro.id][vaca.id],
-          };
-          // touros[touro.id].acasalamentos--;
-          if (touros[touro.id].paresPossiveis !== touros[touro.id].acasalamentos) {
-            touros[touro.id].paresPossiveis--;
-          }
-          vacas[vaca.id].acasalou = true;
+          });
+          console.log("Sou o touro", touros[touro.id].id);
+          touros[touro.id].paresPossiveis--;
+          vacas[vaca.id].paresPossiveis--;
           if (touros[touro.id].paresGarantidos.length === touros[touro.id].acasalamentos) {
             touros[touro.id].acasalou = true;
           }
-        } else {
+        }else{
+          touros[touro.id].paresPossiveis--;
+          vacas[vaca.id].paresPossiveis--;
           matriz[touro.id][vaca.id] = -1;
-          if (touros[touro.id].paresPossiveis > touros[touro.id].acasalamentos) {
-            touros[touro.id].paresPossiveis--;
-          }
         }
       } else {
-        if (touros[touro.id].paresPossiveis === touros[touro.id].acasalamentos) {
-          if (touros[touro.id].acasalou === false) {
-            touros[touro.id].paresGarantidos.push = {
-              vaca: vacas[vaca.id],
-              distancia: matriz[touro.id][vaca.id],
-            };
-            // touros[touro.id].acasalamentos--;
-            vacas[vaca.id].paresPossiveis--;
-            vacas[vaca.id].acasalou = true;
-            if (touros[touro.id].paresGarantidos.length === touros[touro.id].acasalamentos) {
-              touros[touro.id].acasalou = true;
-            }
-          } else {
-            vacas[vaca.id].paresPossiveis--;
-            matriz[touro.id][vaca.id] = -1;
-          }
+        touros[touro.id].acasalou = true;
+        touros[touro.id].paresPossiveis--;
+        vacas[vaca.id].paresPossiveis--;
+        matriz[touro.id][vaca.id] = -1;
+      }
+    } else {
+      if (vacas[vaca.id].paresPossiveis === 1) {
+        if(vacas[vaca.id].acasalou === false){
+        console.log("Sou a vaca:", vacas[vaca.id].id);
+        vacas[vaca.id].acasalou = true;
+        touros[touro.id].paresPossiveis--;
+        vacas[vaca.id].paresPossiveis--;
+        touros[touro.id].paresGarantidos.push({
+          vaca: vacas[vaca.id],
+          distancia: matriz[touro.id][vaca.id],
+        });
+      
+        if (touros[touro.id].paresGarantidos.length === touros[touro.id].acasalamentos) {
+          touros[touro.id].acasalou = true;
         }
+      }
+      } else {
+        console.log("Sou a vaca: e não preciso deste par", vacas[vaca.id].id);
+        touros[touro.id].paresPossiveis--;
+        vacas[vaca.id].paresPossiveis--;
+        matriz[touro.id][vaca.id] = -1;
       }
     }
   }
+
   console.log("Touros e vacas pós execucao");
   checaVacasTouros(touros, vacas);
   console.log("Matriz de saida");
