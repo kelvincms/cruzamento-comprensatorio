@@ -10,10 +10,10 @@ export const gerarAnimais = (machos, femeas) => {
       id: i,
       contribuicao: Math.random() * (MAX - MIN) + MIN,
       sexo: "macho",
-      acasalamentosRestantes: 0,
       paresPossiveis: 0,
       acasalou: false,
       paresGarantidos: [],
+
     });
   }
 
@@ -21,10 +21,10 @@ export const gerarAnimais = (machos, femeas) => {
     arrayVacas.push({
       id: i,
       paresPossiveis: 0,
-      acasalamentosRestantes: 0,
       contribuicao: Math.random() * (MAX - MIN) + MIN,
       sexo: "femea",
       acasalou: false,
+      parVaca: [],
     });
   }
 
