@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
-//import { Chart } from "react-google-charts";
-//import Button from "@material-ui/core/Button";
 
-//import BasicTable from "./Table";
 import { PriorityQueue } from "./queue-priority";
 
 import { gerarAnimais, contagemAcasalamentos, calcularVariancia, calcularMedia, mediaProleC, vacasPossiveisAcasalar, criarMatriz, createTable, deleteRow, deleteColumn, printMatriz, printArray, checaVacasTouros } from "./helpers";
@@ -49,14 +46,13 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
     const {
       element: { vaca, touro },
     } = priorityQueue.dequeue();
-    console.log("Vaca,touro atual:",{vaca, touro});
+    console.log("Vaca,touro atual:", { vaca, touro });
     const idTouroAtual = touro.id;
     const idVacaAtual = vaca.id;
     if (touros[idTouroAtual].acasalou === false && vacas[idVacaAtual].acasalou === false) {
       console.log("isto é um par válido");
       for (let index = 0; index < vacas.length; index++) {
-        if (vacas[index].paresPossiveis === 1 && touros[idTouroAtual].acasalou === false) {
-          if(matriz[idTouroAtual][index] !== -1 && vacas[index].acasalou===false){
+        if (vacas[index].paresPossiveis === 1 && touros[idTouroAtual].acasalou === false && matriz[idTouroAtual][index] !== -1 && vacas[index].acasalou === false) {
           touros[idTouroAtual].paresGarantidos.push({
             vaca: vacas[index],
             distancia: matriz[idTouroAtual][index],
@@ -64,65 +60,61 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
           if (touros[idTouroAtual].paresGarantidos.length === touros[idTouroAtual].acasalamentos) {
             touros[idTouroAtual].acasalou = true;
             for (let index = 0; index < vacas.length; index++) {
-              if(matriz[idTouroAtual][index] !== -1){
-              vacas[index].paresPossiveis--;
-              matriz[idTouroAtual][index] = -1;
+              if (matriz[idTouroAtual][index] !== -1) {
+                vacas[index].paresPossiveis--;
+                matriz[idTouroAtual][index] = -1;
               }
             }
-        //   break;
+            //   break;
           }
           vacas[index].acasalou = true;
           vacas[index].paresPossiveis = -1;
         }
       }
-      }
       if (touros[idTouroAtual].paresGarantidos.length === touros[idTouroAtual].acasalamentos) {
         matriz[idTouroAtual][index] = -1;
         continue;
       } else {
-        if(vacas[idVacaAtual].acasalou === false){
-        touros[idTouroAtual].paresGarantidos.push({
-          vaca: vacas[idVacaAtual],
-          distancia: matriz[idTouroAtual][idVacaAtual],
-        });
-        vacas[idVacaAtual].acasalou = true;
-        vacas[idVacaAtual].paresPossiveis = -1;
-        if (touros[idTouroAtual].paresGarantidos.length === touros[idTouroAtual].acasalamentos) {
-          touros[idTouroAtual].acasalou = true;
-          for (let index = 0; index < vacas.length; index++) {
-            console.log("Sou o index:", index);
-            if(matriz[idTouroAtual][index] !== -1){
-            vacas[index].paresPossiveis--;
-            matriz[idTouroAtual][index] = -1;
+        if (vacas[idVacaAtual].acasalou === false) {
+          touros[idTouroAtual].paresGarantidos.push({
+            vaca: vacas[idVacaAtual],
+            distancia: matriz[idTouroAtual][idVacaAtual],
+          });
+          vacas[idVacaAtual].acasalou = true;
+          vacas[idVacaAtual].paresPossiveis = -1;
+          if (touros[idTouroAtual].paresGarantidos.length === touros[idTouroAtual].acasalamentos) {
+            touros[idTouroAtual].acasalou = true;
+            for (let index = 0; index < vacas.length; index++) {
+              console.log("Sou o index:", index);
+              if (matriz[idTouroAtual][index] !== -1) {
+                vacas[index].paresPossiveis--;
+                matriz[idTouroAtual][index] = -1;
+              }
             }
           }
         }
       }
-      }
     } else {
       console.log("Pintei como -1");
-     // vacas[idVacaAtual].paresPossiveis--;
       matriz[idTouroAtual][idVacaAtual] = -1;
     }
   }
 
   console.log("Touros e vacas pós execucao");
   checaVacasTouros(touros, vacas);
-  // console.log("Matriz de saida");
-  // printMatriz(matriz);
-let matrizMontada = criarMatriz(10,5);
-for (let touross = 0; touross < touros.length; touross++) {
-touros[touross].paresGarantidos.map((item)=>{
-matrizMontada[touros[touross].id][item.vaca.id] = "X";
-})
-}
-console.log("Matriz de saida");
-printMatriz(matrizMontada);
+  let matrizMontada = criarMatriz(coluna, linha);
+  for (let touross = 0; touross < touros.length; touross++) {
+    touros[touross].paresGarantidos.map((item) => {
+      matrizMontada[touros[touross].id][item.vaca.id] = 1;
+    });
+  }
+  return matrizMontada;
 };
 
+const linha = 6,
+  coluna = 15;
+
 export default function App() {
-  const linha = 5,
-    coluna = 10;
   let queuePriority;
   let mediaMatrizC;
   let vacas;
@@ -132,35 +124,70 @@ export default function App() {
   let matrizDistancia = Array.from({ length: linha }, (v) => Array.from({ length: coluna }, (v) => 0));
 
   const { arrayVacas, arrayTouros } = gerarAnimais(linha, coluna);
-
+  
   matrizC = [
-    [1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
-    [0, 1, 0, 0, 1, 1, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+    [0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0],
+    [0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
   ];
-
-  // matrizC = [
-  //   [1, 0, 0],
-  //   [0, 1, 0],
-  //   [0, 0, 1],
-  // ];
-
+  
   matrizP = [
-    [1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
-    [0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
   ];
+  
+  // matrizC = [
+  //   [1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+  //   [0, 1, 0, 0, 1, 1, 0, 0, 0, 1],
+  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+  //   [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+  // ];
+  // matrizP = [
+    //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    // ];
+    
 
+    // matrizP = [
+      //   [1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+      //   [0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+      //   [0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+      //   [1, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+      //   [0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
+      // ];
+      
   // matrizP = [
   //   [0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
   //   [1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
   //   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   //   [1, 1, 1, 1, 1, 1, 1, 0, 0, 1],
   //   [1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  // ];
+  
+  // matrizP = [
+  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  // ];
+
+  // matrizC = [
+  //   [1, 0, 0],
+  //   [0, 1, 0],
+  //   [0, 0, 1],
   // ];
 
   // matrizP = [
@@ -170,12 +197,11 @@ export default function App() {
   // ];
 
   // matrizP = [
-  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 0, 0],
+  //   [0, 0, 0],
+  //   [0, 0, 0],
   // ];
+
 
   vacas = arrayVacas;
   touros = contagemAcasalamentos(matrizC, arrayTouros);
@@ -187,11 +213,18 @@ export default function App() {
   const { matrizDistanciaCalculada, priorityQueue } = calcularDistancia(matrizC, matrizP, touros, vacas, mediaC);
   console.log("Vacas e touros antes da execucao");
   checaVacasTouros(touros, vacas);
-
   matrizDistancia = matrizDistanciaCalculada;
-
   const paresSolucao = execucao(matrizDistancia, touros, vacas, priorityQueue);
-
+  console.log("Solucao");
+  printMatriz(paresSolucao);
+  const { mediaC: mediaS, varianciaC: varianciaS } = mediaProleC(paresSolucao, vacas, touros);
+  if (mediaC.toPrecision(2) === mediaS.toPrecision(2)) {
+    console.log("Media:", mediaC, "Variancia antiga", varianciaC);
+    console.log("Media:", mediaS, "Nova variancia:", varianciaS);
+  } else {
+    console.log("Erro na execução");
+  }
+  console.log(paresSolucao);
   return <div></div>;
 }
 

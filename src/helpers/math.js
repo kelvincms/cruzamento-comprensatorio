@@ -1,7 +1,9 @@
+import { checaVacasTouros } from ".";
+
 export const mediaProleC = (matrizC, vacas, touros) => {
   let sum = 0;
   let vetorContribuicaoIndividual = [];
-
+checaVacasTouros(touros,vacas);
   for (let i = 0; i < matrizC.length; i++) {
     for (let j = 0; j < matrizC[0].length; j++) {
       if (matrizC[i][j] === 1) {

@@ -21,7 +21,7 @@ export class PriorityQueue {
     var qElement = new QElement(element, priority);
 
     var contain = false;
-
+9
     // iterating through the entire
     // item array to add element at the
     // correct location of the Queue
