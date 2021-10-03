@@ -26,7 +26,7 @@ export class PriorityQueue {
     // item array to add element at the
     // correct location of the Queue
     for (var i = 0; i < this.items.length; i++) {
-      if (this.items[i].priority < qElement.priority) {
+      if (this.items[i].priority > qElement.priority) {
         // Once the correct location is found it is
         // enqueued
         this.items.splice(i, 0, qElement);

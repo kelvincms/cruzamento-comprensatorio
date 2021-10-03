@@ -12,7 +12,7 @@ export const gerarAnimais = (machos, femeas) => {
       sexo: "macho",
       paresPossiveis: 0,
       acasalou: false,
-      paresGarantidos: {},
+      paresGarantidos: [],
     });
   }
 
