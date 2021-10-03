@@ -43,15 +43,20 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
   const tamPriorityQueue = priorityQueue.size();
   for (let index = 0; index < tamPriorityQueue; index++) {
     //1. Retira o elemento da fila de prioridade, a ordem da retirada é pelo maior valor.
+    console.log("Matriz agora");
+    printMatriz(matriz);
+    checaVacasTouros(touros, vacas);
     const {
       element: { vaca, touro },
     } = priorityQueue.dequeue();
+    console.log("Vaca,touro atual:",{vaca, touro});
     const idTouroAtual = touro.id;
     const idVacaAtual = vaca.id;
-    if (touro.acasalou === false && vaca.acasalou === false) {
+    if (touros[idTouroAtual].acasalou === false && vacas[idVacaAtual].acasalou === false) {
+      console.log("isto é um par válido");
       for (let index = 0; index < vacas.length; index++) {
         if (vacas[index].paresPossiveis === 1 && touros[idTouroAtual].acasalou === false) {
-          if(matriz[idTouroAtual][index] !== -1){
+          if(matriz[idTouroAtual][index] !== -1 && vacas[index].acasalou===false){
           touros[idTouroAtual].paresGarantidos.push({
             vaca: vacas[index],
             distancia: matriz[idTouroAtual][index],
@@ -59,9 +64,12 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
           if (touros[idTouroAtual].paresGarantidos.length === touros[idTouroAtual].acasalamentos) {
             touros[idTouroAtual].acasalou = true;
             for (let index = 0; index < vacas.length; index++) {
+              if(matriz[idTouroAtual][index] !== -1){
               vacas[index].paresPossiveis--;
               matriz[idTouroAtual][index] = -1;
+              }
             }
+        //   break;
           }
           vacas[index].acasalou = true;
           vacas[index].paresPossiveis = -1;
@@ -69,6 +77,7 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
       }
       }
       if (touros[idTouroAtual].paresGarantidos.length === touros[idTouroAtual].acasalamentos) {
+        matriz[idTouroAtual][index] = -1;
         continue;
       } else {
         if(vacas[idVacaAtual].acasalou === false){
@@ -82,21 +91,33 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
           touros[idTouroAtual].acasalou = true;
           for (let index = 0; index < vacas.length; index++) {
             console.log("Sou o index:", index);
+            if(matriz[idTouroAtual][index] !== -1){
             vacas[index].paresPossiveis--;
             matriz[idTouroAtual][index] = -1;
+            }
           }
         }
       }
       }
     } else {
+      console.log("Pintei como -1");
+     // vacas[idVacaAtual].paresPossiveis--;
       matriz[idTouroAtual][idVacaAtual] = -1;
     }
   }
 
   console.log("Touros e vacas pós execucao");
   checaVacasTouros(touros, vacas);
-  console.log("Matriz de saida");
-  printMatriz(matriz);
+  // console.log("Matriz de saida");
+  // printMatriz(matriz);
+let matrizMontada = criarMatriz(10,5);
+for (let touross = 0; touross < touros.length; touross++) {
+touros[touross].paresGarantidos.map((item)=>{
+matrizMontada[touros[touross].id][item.vaca.id] = "X";
+})
+}
+console.log("Matriz de saida");
+printMatriz(matrizMontada);
 };
 
 export default function App() {
@@ -120,21 +141,41 @@ export default function App() {
     [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
   ];
 
-  // matrizP = [
-  //   [0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
-  //   [1, 1, 0, 0, 1, 0, 1, 1, 0, 0],
-  //   [0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
-  //   [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-  //   [0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
+  // matrizC = [
+  //   [1, 0, 0],
+  //   [0, 1, 0],
+  //   [0, 0, 1],
   // ];
 
   matrizP = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+    [0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
   ];
+
+  // matrizP = [
+  //   [0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
+  //   [1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
+  //   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  //   [1, 1, 1, 1, 1, 1, 1, 0, 0, 1],
+  //   [1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  // ];
+
+  // matrizP = [
+  //   [0, 1, 0],
+  //   [0, 0, 0],
+  //   [0, 1, 0],
+  // ];
+
+  // matrizP = [
+  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  // ];
 
   vacas = arrayVacas;
   touros = contagemAcasalamentos(matrizC, arrayTouros);
