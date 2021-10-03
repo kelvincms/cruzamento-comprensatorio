@@ -32,15 +32,11 @@ const calcularDistancia = (matriz, matrizP, touros, vacas, media) => {
 };
 
 const execucao = (matriz, touros, vacas, priorityQueue) => {
-  //var priorityQueue = new PriorityQueue();
-
-  //  printMatriz(matriz);
+  
   console.log("Elementos da fila:");
   priorityQueue.getItems().map((item) => console.log(item));
-  //0.3 Recalculo de quantiade de acasalamentos restantes baseado em: (`tamanho da matriz em colunas` menos a `quantidade de pares impossiveis`)
   const tamPriorityQueue = priorityQueue.size();
   for (let index = 0; index < tamPriorityQueue; index++) {
-    //1. Retira o elemento da fila de prioridade, a ordem da retirada é pelo maior valor.
     const {
       element: { vaca, touro },
     } = priorityQueue.dequeue();
@@ -61,10 +57,11 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
                 matriz[idTouroAtual][index] = -1;
               }
             }
-
           }
           vacas[index].acasalou = true;
           vacas[index].paresPossiveis = -1;
+        }else if (touros[idTouroAtual].acasalou === true){
+          break;
         }
       }
       if (touros[idTouroAtual].paresGarantidos.length === touros[idTouroAtual].acasalamentos) {
