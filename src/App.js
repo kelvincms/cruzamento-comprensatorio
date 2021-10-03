@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { } from "react";
 
 import { PriorityQueue } from "./queue-priority";
 
-import { gerarAnimais, contagemAcasalamentos, calcularVariancia, calcularMedia, mediaProleC, vacasPossiveisAcasalar, criarMatriz, createTable, deleteRow, deleteColumn, printMatriz, printArray, checaVacasTouros } from "./helpers";
+import { gerarAnimais, contagemAcasalamentos, mediaProleC, criarMatriz, printMatriz,  checaVacasTouros } from "./helpers";
 
 const calcularDistancia = (matriz, matrizP, touros, vacas, media) => {
   let matrizDistanciaCalculada = criarMatriz(vacas.length, touros.length);
@@ -35,22 +35,18 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
   //var priorityQueue = new PriorityQueue();
 
   //  printMatriz(matriz);
+  console.log("Elementos da fila:");
   priorityQueue.getItems().map((item) => console.log(item));
   //0.3 Recalculo de quantiade de acasalamentos restantes baseado em: (`tamanho da matriz em colunas` menos a `quantidade de pares impossiveis`)
   const tamPriorityQueue = priorityQueue.size();
   for (let index = 0; index < tamPriorityQueue; index++) {
     //1. Retira o elemento da fila de prioridade, a ordem da retirada é pelo maior valor.
-    console.log("Matriz agora");
-    printMatriz(matriz);
-    checaVacasTouros(touros, vacas);
     const {
       element: { vaca, touro },
     } = priorityQueue.dequeue();
-    console.log("Vaca,touro atual:", { vaca, touro });
     const idTouroAtual = touro.id;
     const idVacaAtual = vaca.id;
     if (touros[idTouroAtual].acasalou === false && vacas[idVacaAtual].acasalou === false) {
-      console.log("isto é um par válido");
       for (let index = 0; index < vacas.length; index++) {
         if (vacas[index].paresPossiveis === 1 && touros[idTouroAtual].acasalou === false && matriz[idTouroAtual][index] !== -1 && vacas[index].acasalou === false) {
           touros[idTouroAtual].paresGarantidos.push({
@@ -65,7 +61,7 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
                 matriz[idTouroAtual][index] = -1;
               }
             }
-            //   break;
+
           }
           vacas[index].acasalou = true;
           vacas[index].paresPossiveis = -1;
@@ -85,7 +81,6 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
           if (touros[idTouroAtual].paresGarantidos.length === touros[idTouroAtual].acasalamentos) {
             touros[idTouroAtual].acasalou = true;
             for (let index = 0; index < vacas.length; index++) {
-              console.log("Sou o index:", index);
               if (matriz[idTouroAtual][index] !== -1) {
                 vacas[index].paresPossiveis--;
                 matriz[idTouroAtual][index] = -1;
@@ -95,13 +90,10 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
         }
       }
     } else {
-      console.log("Pintei como -1");
       matriz[idTouroAtual][idVacaAtual] = -1;
     }
   }
 
-  console.log("Touros e vacas pós execucao");
-  checaVacasTouros(touros, vacas);
   let matrizMontada = criarMatriz(coluna, linha);
   for (let touross = 0; touross < touros.length; touross++) {
     touros[touross].paresGarantidos.map((item) => {
@@ -215,8 +207,12 @@ export default function App() {
   checaVacasTouros(touros, vacas);
   matrizDistancia = matrizDistanciaCalculada;
   const paresSolucao = execucao(matrizDistancia, touros, vacas, priorityQueue);
+  
+  console.log("Touros e vacas pós execucao");
+  checaVacasTouros(touros, vacas);
+
   console.log("Solucao");
-  printMatriz(paresSolucao);
+  console.log(paresSolucao);
   const { mediaC: mediaS, varianciaC: varianciaS } = mediaProleC(paresSolucao, vacas, touros);
   if (mediaC.toPrecision(2) === mediaS.toPrecision(2)) {
     console.log("Media:", mediaC, "Variancia antiga", varianciaC);
@@ -224,7 +220,6 @@ export default function App() {
   } else {
     console.log("Erro na execução");
   }
-  console.log(paresSolucao);
   return <div></div>;
 }
 
