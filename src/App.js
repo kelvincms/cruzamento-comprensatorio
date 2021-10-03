@@ -51,7 +51,8 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
     if (touro.acasalou === false && vaca.acasalou === false) {
       for (let index = 0; index < vacas.length; index++) {
         if (vacas[index].paresPossiveis === 1 && touros[idTouroAtual].acasalou === false) {
-          touros[idTouroAtual].paresGarantidos.push = ({
+          if(matriz[idTouroAtual][index] !== -1){
+          touros[idTouroAtual].paresGarantidos.push({
             vaca: vacas[index],
             distancia: matriz[idTouroAtual][index],
           });
@@ -66,10 +67,12 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
           vacas[index].paresPossiveis = -1;
         }
       }
+      }
       if (touros[idTouroAtual].paresGarantidos.length === touros[idTouroAtual].acasalamentos) {
         continue;
       } else {
-        touros[idTouroAtual].paresGarantidos.push = ({
+        if(vacas[idVacaAtual].acasalou === false){
+        touros[idTouroAtual].paresGarantidos.push({
           vaca: vacas[idVacaAtual],
           distancia: matriz[idTouroAtual][idVacaAtual],
         });
@@ -84,61 +87,16 @@ const execucao = (matriz, touros, vacas, priorityQueue) => {
           }
         }
       }
+      }
     } else {
       matriz[idTouroAtual][idVacaAtual] = -1;
     }
-
-    //   if (vacas[vaca.id].paresPossiveis !== 1 && touros[touro.id].paresPossiveis !== touros[touro.id].acasalamentos) {
-    //     vacas[vaca.id].paresPossiveis--;
-    //     touros[touro.id].paresPossiveis--;
-    //     matriz[touro.id][vaca.id] = -1;
-    //   } else {
-    //     if (vacas[vaca.id].paresPossiveis === 1) {
-    //       if (vacas[vaca.id].acasalou === false) {
-    //         touros[touro.id].paresGarantidos = {
-    //           vaca: vacas[vaca.id],
-    //           distancia: matriz[touro.id][vaca.id],
-    //         };
-    //         // touros[touro.id].acasalamentos--;
-    //         if (touros[touro.id].paresPossiveis !== touros[touro.id].acasalamentos) {
-    //           touros[touro.id].paresPossiveis--;
-    //         }
-    //         vacas[vaca.id].acasalou = true;
-    //         if (touros[touro.id].paresGarantidos.length === touros[touro.id].acasalamentos) {
-    //           touros[touro.id].acasalou = true;
-    //         }
-    //       } else {
-    //         matriz[touro.id][vaca.id] = -1;
-    //         if (touros[touro.id].paresPossiveis > touros[touro.id].acasalamentos) {
-    //           touros[touro.id].paresPossiveis--;
-    //         }
-    //       }
-    //     } else {
-    //       if (touros[touro.id].paresPossiveis === touros[touro.id].acasalamentos) {
-    //         if (touros[touro.id].acasalou === false) {
-    //           touros[touro.id].paresGarantidos.push = {
-    //             vaca: vacas[vaca.id],
-    //             distancia: matriz[touro.id][vaca.id],
-    //           };
-    //           // touros[touro.id].acasalamentos--;
-    //           vacas[vaca.id].paresPossiveis--;
-    //           vacas[vaca.id].acasalou = true;
-    //           if (touros[touro.id].paresGarantidos.length === touros[touro.id].acasalamentos) {
-    //             touros[touro.id].acasalou = true;
-    //           }
-    //         } else {
-    //           vacas[vaca.id].paresPossiveis--;
-    //           matriz[touro.id][vaca.id] = -1;
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-    console.log("Touros e vacas pós execucao");
-    checaVacasTouros(touros, vacas);
-    console.log("Matriz de saida");
-    printMatriz(matriz);
   }
+
+  console.log("Touros e vacas pós execucao");
+  checaVacasTouros(touros, vacas);
+  console.log("Matriz de saida");
+  printMatriz(matriz);
 };
 
 export default function App() {
